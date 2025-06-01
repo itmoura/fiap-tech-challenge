@@ -1,0 +1,111 @@
+spring:
+  profiles:
+    active: develop
+  application:
+    name: tech-challenge-api
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+      format_sql: true
+      type: trace
+      use_sql_comments: true
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    hikari:
+      maximum-pool-size: 30
+      connection-timeout: 24000
+      minimum-idle: 10
+    driver-class-name: org.postgresql.Driver
+server:
+  port: ${APP_PORT:8080}
+management:
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    defaults:
+      enabled: true
+    db:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,metrics-requiredMetricName,metrics,health-path,health,info
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: develop
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_SCHEMA:tech_challenge}
+    username: ${BD_USER:postgres}
+    password: ${BD_PASS:root}
+  jpa:
+    show-sql: true
+
+logging:
+  level:
+#    org.springframework: DEBUG
+#    org.hibernate: DEBUG
+    com.fiap.itmoura.tech_challenge: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+    org.springframework.data.mongodb.repository.query: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: staging
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_SCHEMA:tech_challenge}?zeroDateTimeBehavior=convertToNull
+    username: ${BD_USER:root}
+    password: ${BD_PASS:root}
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+      format_sql: true
+      type: trace
+      use_sql_comments: true
+
+logging:
+  level:
+    br.com.conquer.plus.retro.api: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+    org.springframework.data.mongodb.repository.query: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:h2db;DATABASE_TO_UPPER=false
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+      format_sql: true
+      type: trace
+      use_sql_comments: true
+
