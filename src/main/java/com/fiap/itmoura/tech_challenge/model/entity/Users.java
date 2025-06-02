@@ -59,5 +59,5 @@ public class Users {
     private LocalDateTime lastUpdatedAt;
 
     @Column
-    private Boolean isActive = true;
+    private Boolean isActive;
 }

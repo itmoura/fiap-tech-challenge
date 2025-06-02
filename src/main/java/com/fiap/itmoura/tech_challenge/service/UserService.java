@@ -138,4 +138,29 @@ public class UserService {
 
         return user.get();
     }
+
+    public void deleteLogicUser(UUID userId) {
+        log.info("Deleting user with ID: {}", userId);
+
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException("User not found with ID: " + userId));
+
+        if (!user.getIsActive()) {
+            log.error("User already deleted: {}", user.getEmail());
+            throw new ConflictRequestException("User already deleted: " + user.getEmail());
+        }
+
+        user.setIsActive(false);
+        userRepository.save(user);
+
+        log.info("User deleted successfully: {}", user.getEmail());
+    }
+
+    public void deletePhysicalUser(UUID userId) {
+        log.info("Physically deleting user with ID: {}", userId);
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadRequestException("User not found with ID: " + userId));
+
+        userRepository.delete(user);
+    }
 }
