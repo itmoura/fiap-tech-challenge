@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Log4j2
@@ -76,28 +77,55 @@ public class UserService {
     }
 
     public UserDTO updateUser(UserDTO userDTO) {
-        getUserLogged();
+        var user = getUserLogged();
 
-//        var user = userRepository.findByEmail(userDTO.email());
-//
-//        if (!user.getEmail().equals(userDTO.email()) && userRepository.existsByEmail(userDTO.email())) {
-//            log.error("User with email already exists: {}", userDTO.email());
-//            throw new ConflictRequestException("User with email already exists: " + userDTO.email());
-//        }
-//
-//        if (!user.getPhone().equals(userDTO.phone()) && userRepository.existsByPhone(userDTO.phone())) {
-//            log.error("User with phone already exists: {}", userDTO.phone());
-//            throw new ConflictRequestException("User with phone already exists: " + userDTO.phone());
-//        }
-//
-//        user.setName(userDTO.name());
-//        user.setEmail(userDTO.email());
-//        user.setPhone(userDTO.phone());
-//        user.setLastUpdatedAt(LocalDateTime.now());
-//
-//        log.info("User updated successfully: {}", user.getEmail());
+        checkWhatUserChanging(user, userDTO);
 
-        return null;
+        log.info("User updated successfully: {}", user.getEmail());
+
+        return UserDTO.fromEntity(userRepository.save(user));
+    }
+
+    private void checkWhatUserChanging(Users user, UserDTO userDTO) {
+        log.info("Checking what user is changing: {}", user.getEmail());
+
+        if (Objects.nonNull(userDTO.name()) && !userDTO.name().equals(user.getName())) {
+            user.setName(userDTO.name());
+        }
+
+        if (Objects.nonNull(userDTO.email()) && !userDTO.email().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(userDTO.email())) {
+                log.error("User with email already exists: {}", userDTO.email());
+                throw new ConflictRequestException("User with email already exists: " + userDTO.email());
+            }
+            user.setEmail(userDTO.email());
+        }
+
+        if (Objects.nonNull(userDTO.password())) {
+            user.setPassword(encoder.encode(userDTO.password()));
+        }
+
+        if (Objects.nonNull(userDTO.roles())) {
+            user.setRoles(userDTO.roles());
+        }
+
+        if (Objects.nonNull(userDTO.address())) {
+            user.setAddress(userDTO.address().toEntity());
+        }
+
+        if (Objects.nonNull(userDTO.birthDate()) && !userDTO.birthDate().equals(user.getBirthDate())) {
+            user.setBirthDate(userDTO.birthDate());
+        }
+
+        if (Objects.nonNull(userDTO.phone()) && !userDTO.phone().equals(user.getPhone())) {
+            if (userRepository.existsByPhone(userDTO.phone())) {
+                log.error("User with phone already exists: {}", userDTO.phone());
+                throw new ConflictRequestException("User with phone already exists: " + userDTO.phone());
+            }
+            user.setPhone(userDTO.phone());
+        }
+
+        user.setLastUpdatedAt(java.time.LocalDateTime.now());
     }
 
     private Users getUserLogged() {

@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fiap.itmoura.tech_challenge.model.entity.Users;
 import com.fiap.itmoura.tech_challenge.model.enums.UserRoleEnum;
@@ -25,11 +27,11 @@ public record UserDTO(
         UUID id,
 
         @Schema(title = "name", description = "User name", example = "John Doe")
-        @NotNull( message = "Name is required")
+        @NotNull( message = "Name is required", groups = OnCreate.class)
         String name,
 
         @Schema(title = "email", description = "User email", example = "italo@meuemail.com")
-        @NotNull( message = "Email is required")
+        @NotNull(message = "Email is required", groups = OnCreate.class)
         String email,
 
         @Schema(title = "password", description = "User password", example = "123456")
@@ -44,10 +46,13 @@ public record UserDTO(
         @Valid AddressDTO address,
 
         @Schema(title = "birthDate", description = "User birth date", example = "1990-01-01")
+        @JsonDeserialize(using = LocalDateDeserializer.class)
+        @JsonSerialize(using = LocalDateSerializer.class)
+        @JsonFormat(pattern = "dd/MM/yyyy")
         LocalDate birthDate,
 
         @Schema(title = "phone", description = "User phone number", example = "+5511999999999")
-        @NotNull( message = "Phone number is required")
+        @NotNull(message = "Phone number is required", groups = OnCreate.class)
         String phone,
 
         @Schema(title = "lastUpdate", description = "Last update timestamp", example = "2023-10-01T12:00:00Z")
