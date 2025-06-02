@@ -21,6 +21,10 @@ spring:
       connection-timeout: 24000
       minimum-idle: 10
     driver-class-name: org.postgresql.Driver
+  security:
+    jwt:
+      secret: '6d95243a-674f-4bc1-b0f0-b7aa470c8ffb'
+      expiration-time: 86400000
 server:
   port: ${APP_PORT:8080}
 management:
@@ -38,6 +42,11 @@ management:
     web:
       exposure:
         include: prometheus,metrics-requiredMetricName,metrics,health-path,health,info
+
+default:
+  cors:
+    allowed:
+      origin: http://localhost:8080,http://localhost:3000,http://*:3000,http://*:8080
 
 logging:
   level:
@@ -96,15 +105,21 @@ spring:
     activate:
       on-profile: test
   datasource:
+    hikari:
+      maximum-pool-size: 30
+      connection-timeout: 24000
+      minimum-idle: 10
+    driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:h2db;DATABASE_TO_UPPER=false
     username: sa
     password:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    open-in-view: false
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
       format_sql: true
       type: trace
       use_sql_comments: true

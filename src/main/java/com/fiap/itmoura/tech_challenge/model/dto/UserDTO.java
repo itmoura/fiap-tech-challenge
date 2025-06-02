@@ -1,51 +1,95 @@
 package com.fiap.itmoura.tech_challenge.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fiap.itmoura.tech_challenge.model.entity.Users;
 import com.fiap.itmoura.tech_challenge.model.enums.UserRoleEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 public record UserDTO(
 
+        @Schema(title = "id", description = "User ID", example = "12345")
+        UUID id,
+
         @Schema(title = "name", description = "User name", example = "John Doe")
-        @NotNull
+        @NotNull( message = "Name is required")
         String name,
 
         @Schema(title = "email", description = "User email", example = "italo@meuemail.com")
-        @NotNull
+        @NotNull( message = "Email is required")
         String email,
 
         @Schema(title = "password", description = "User password", example = "123456")
-        @NotNull
+        @NotNull(message = "Password is required", groups = OnCreate.class)
+        @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
         String password,
 
-        @Schema(title = "role", description = "User role", example = "ADMIN")
-        Set<UserRoleEnum> role,
+        @Schema(title = "roles", description = "User role", example = "ADMIN")
+        Set<UserRoleEnum> roles,
 
         @Schema(title = "address", description = "User address")
-        AddressDTO address,
+        @Valid AddressDTO address,
+
+        @Schema(title = "birthDate", description = "User birth date", example = "1990-01-01")
+        LocalDate birthDate,
 
         @Schema(title = "phone", description = "User phone number", example = "+5511999999999")
+        @NotNull( message = "Phone number is required")
         String phone,
 
         @Schema(title = "lastUpdate", description = "Last update timestamp", example = "2023-10-01T12:00:00Z")
         @LastModifiedDate
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
         @JsonSerialize(using = LocalDateTimeSerializer.class)
+        @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
         LocalDateTime lastUpdate,
 
         @Schema(title = "createdAt", description = "Creation timestamp", example = "2023-10-01T12:00:00Z")
         @CreatedDate
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
         @JsonSerialize(using = LocalDateTimeSerializer.class)
+        @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
         LocalDateTime createdAt
 ) {
+        public Users toEntity() {
+            return Users.builder()
+                    .name(name)
+                    .email(email)
+                    .password(password)
+                    .roles(roles)
+                    .address(address != null ? address.toEntity() : null)
+                    .birthDate(birthDate)
+                    .phone(phone)
+                    .lastUpdatedAt(LocalDateTime.now())
+                    .createdAt(createdAt != null ? createdAt : LocalDateTime.now())
+                    .build();
+        }
+
+        public static UserDTO fromEntity(Users users) {
+            return new UserDTO(
+                    users.getId(),
+                    users.getName(),
+                    users.getEmail(),
+                    users.getPassword(),
+                    users.getRoles(),
+                    users.getAddress() != null ? AddressDTO.fromEntity(users.getAddress()) : null,
+                    users.getBirthDate(),
+                    users.getPhone(),
+                    users.getLastUpdatedAt(),
+                    users.getCreatedAt()
+            );
+        }
 }
