@@ -85,7 +85,7 @@ gradle bootRun
 <tr>
 
 <td align="center"> 
-<a href="https://github.com/itmoura" style="text-align:center;">
+<a href="https://www.linkedin.com/in/itmoura/" style="text-align:center;">
 <img style="border-radius: 20%;" src="https://github.com/itmoura.png" width="120px;" alt="autor"/><br> <strong> Ítalo Moura </strong>
 </a>
 </td>
