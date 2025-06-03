@@ -49,20 +49,27 @@ src
 │   │                    │  └── impl
 │   │                    └── TechChallengeApplication.java
 │   └── resources
-│       └──  application.properties
+│       └──  application.yaml
 └──
 ```
 
 ## Configuração do Banco de Dados
 Certifique-se de ter o PostgreSQL instalado e configurado. Crie um banco de dados chamado `tech_challenge` e configure as credenciais no arquivo `application.properties`.
 
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/tech_challenge
-spring.datasource.username=seu_usuario
-spring.datasource.password=sua_senha
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+```yaml
+# application.yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tech_challenge
+    username: seu_usuario
+    password: sua_senha
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 ```
 
 ## Execução do Projeto
