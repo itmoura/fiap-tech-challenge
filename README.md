@@ -1,3 +1,5 @@
+[![Java CI with Gradle](https://github.com/itmoura/fiap-tech-challenge/actions/workflows/maven.yml/badge.svg)](https://github.com/itmoura/fiap-tech-challenge/actions/workflows/maven.yml)
+
 # Desafio FIAP - tech challenge
 
 ## Projeto
