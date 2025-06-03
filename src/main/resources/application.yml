@@ -1,11 +1,11 @@
 spring:
   profiles:
-    active: develop
+    active: ${SPRING_PROFILES_ACTIVE:develop}
   application:
     name: tech-challenge-api
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     open-in-view: false
     properties:
       hibernate:
@@ -79,18 +79,18 @@ logging:
 spring:
   config:
     activate:
-      on-profile: staging
+      on-profile: prod
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_SCHEMA:tech_challenge}?zeroDateTimeBehavior=convertToNull
-    username: ${BD_USER:root}
+    url: jdbc:postgresql://fiap-postgres:5432/tech_challenge
+    username: ${BD_USER:postgres}
     password: ${BD_PASS:root}
   jpa:
     show-sql: true
     properties:
       hibernate:
-      format_sql: true
-      type: trace
-      use_sql_comments: true
+        format_sql: true
+        type: trace
+        use_sql_comments: true
 
 logging:
   level:
@@ -98,29 +98,4 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
     org.springframework.data.mongodb.repository.query: DEBUG
-
----
-spring:
-  config:
-    activate:
-      on-profile: test
-  datasource:
-    hikari:
-      maximum-pool-size: 30
-      connection-timeout: 24000
-      minimum-idle: 10
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:h2db;DATABASE_TO_UPPER=false
-    username: sa
-    password:
-  jpa:
-    hibernate:
-      ddl-auto: update
-    open-in-view: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-      format_sql: true
-      type: trace
-      use_sql_comments: true
 

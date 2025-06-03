@@ -31,7 +31,12 @@ public class JWTConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(HttpMethod.POST, "/login").permitAll()
-                    .requestMatchers("/v3/api-docs", "/swagger-resources/**", "/swagger-ui/**", "/webjars/**").permitAll()
+                    .requestMatchers(
+                            "/v3/api-docs/**",
+                            "/swagger-resources/**",
+                            "/swagger-ui/**",
+                            "/webjars/**"
+                    ).permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/users/create").permitAll()
                     .anyRequest().authenticated()
             )
