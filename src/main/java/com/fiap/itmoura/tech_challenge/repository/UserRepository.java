@@ -1,12 +1,12 @@
 package com.fiap.itmoura.tech_challenge.repository;
 
-import com.fiap.itmoura.tech_challenge.model.entity.Users;
-import jakarta.validation.constraints.NotNull;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-import java.util.UUID;
+import com.fiap.itmoura.tech_challenge.model.entity.Users;
 
 @Repository
 public interface UserRepository extends JpaRepository<Users, UUID> {

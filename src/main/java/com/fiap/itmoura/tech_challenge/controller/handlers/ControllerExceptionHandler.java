@@ -1,8 +1,8 @@
 package com.fiap.itmoura.tech_challenge.controller.handlers;
 
-import com.fiap.itmoura.tech_challenge.exception.BadRequestException;
-import com.fiap.itmoura.tech_challenge.exception.ConflictRequestException;
-import com.fiap.itmoura.tech_challenge.model.dto.ValidationErrorDTO;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.postgresql.util.PSQLException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,8 +10,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.fiap.itmoura.tech_challenge.exception.BadRequestException;
+import com.fiap.itmoura.tech_challenge.exception.ConflictRequestException;
+import com.fiap.itmoura.tech_challenge.model.dto.ValidationErrorDTO;
 
 @ControllerAdvice
 public class ControllerExceptionHandler {
@@ -19,7 +20,7 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationErrorDTO> handlerMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         var status = HttpStatus.BAD_REQUEST;
-        List<String> errors = new ArrayList<String>();
+        List<String> errors = new ArrayList<>();
         for (var error : ex.getBindingResult().getFieldErrors()) {
             errors.add(error.getField() + ": " + error.getDefaultMessage());
         }

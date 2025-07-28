@@ -1,8 +1,8 @@
 package com.fiap.itmoura.tech_challenge.model.dto;
 
 import com.fiap.itmoura.tech_challenge.model.entity.Address;
+
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 public record AddressDTO(
