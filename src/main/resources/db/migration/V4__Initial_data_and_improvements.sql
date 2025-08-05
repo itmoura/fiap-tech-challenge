@@ -50,24 +50,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Constraints de validação
-ALTER TABLE users ADD CONSTRAINT check_email_format 
-    CHECK (validate_email(email));
-
-ALTER TABLE users ADD CONSTRAINT check_phone_format 
-    CHECK (validate_phone(phone));
-
-ALTER TABLE address ADD CONSTRAINT check_cep_format 
-    CHECK (validate_cep(zip_code));
-
--- Constraint para garantir que birth_date não seja no futuro
-ALTER TABLE users ADD CONSTRAINT check_birth_date_not_future 
-    CHECK (birth_date <= CURRENT_DATE);
-
--- Constraint para garantir que birth_date seja razoável (não muito antiga)
-ALTER TABLE users ADD CONSTRAINT check_birth_date_reasonable 
-    CHECK (birth_date >= '1900-01-01');
-
 -- View para estatísticas de usuários
 CREATE OR REPLACE VIEW user_statistics AS
 SELECT 
