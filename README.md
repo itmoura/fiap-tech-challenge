@@ -1,21 +1,25 @@
 [![Java CI with Gradle](https://github.com/itmoura/fiap-tech-challenge/actions/workflows/maven.yml/badge.svg)](https://github.com/itmoura/fiap-tech-challenge/actions/workflows/maven.yml)
 
-# FIAP Tech Challenge - Fase 2
+# FIAP Tech Challenge - Microserviço de Usuários
 
-Sistema de gestão para restaurantes desenvolvido como parte do Tech Challenge da FIAP.
+Microserviço responsável pela gestão de usuários e tipos de usuário, desenvolvido como parte do Tech Challenge da FIAP.
 
 ## 📋 Sobre o Projeto
 
-Este sistema permite que restaurantes gerenciem suas operações de forma eficiente, enquanto os clientes podem consultar informações, deixar avaliações e fazer pedidos online. O projeto está sendo desenvolvido em fases para garantir uma implementação gradual e controlada.
+Este microserviço é parte de um sistema distribuído para gestão de restaurantes. Ele é responsável exclusivamente pela gestão de usuários e seus tipos, seguindo os princípios de arquitetura de microserviços com responsabilidades bem definidas.
 
-### Fase 2 - Funcionalidades Implementadas
+### Funcionalidades Implementadas
 
-- ✅ **Gestão de Tipos de Usuário**: CRUD completo para tipos de usuário (Dono de Restaurante, Cliente)
-- ✅ **Cadastro de Restaurantes**: CRUD completo para restaurantes com validações
-- ✅ **Cadastro de Itens do Cardápio**: CRUD completo para itens do cardápio
+- ✅ **Gestão de Tipos de Usuário**: CRUD completo para tipos de usuário (Administrador, Cliente, Moderador)
+- ✅ **Gestão de Usuários**: CRUD completo para usuários com validações robustas
 - ✅ **Associação de Usuários com Tipos**: Relacionamento entre usuários e tipos de usuário
+- ✅ **Soft Delete**: Desativação lógica de usuários e tipos
+- ✅ **Paginação**: Suporte a consultas paginadas
+- ✅ **Busca Avançada**: Busca por email, tipo de usuário, etc.
+- ✅ **Alteração de Senha**: Funcionalidade segura para alteração de senhas
+- ✅ **Contadores**: Estatísticas de usuários ativos por tipo
 - ✅ **Documentação da API**: Swagger/OpenAPI integrado
-- ✅ **Testes Automatizados**: Testes unitários e de integração com cobertura de 80%
+- ✅ **Testes Automatizados**: Testes unitários e de integração com alta cobertura
 - ✅ **Docker Compose**: Configuração para execução com PostgreSQL
 
 ## 🏗️ Arquitetura
@@ -24,9 +28,10 @@ O projeto segue uma arquitetura em camadas com as seguintes tecnologias:
 
 - **Backend**: Spring Boot 3.4.5 com Java 21
 - **Banco de Dados**: PostgreSQL (produção) / H2 (testes)
+- **Segurança**: Spring Security com JWT
 - **Documentação**: Swagger/OpenAPI
 - **Testes**: JUnit 5, Mockito, Spring Boot Test
-- **Build**: Gradle
+- **Build**: Gradle com JaCoCo para cobertura
 - **Containerização**: Docker e Docker Compose
 
 ### Estrutura do Projeto
@@ -64,6 +69,7 @@ src/
 ```bash
 git clone https://github.com/itmoura/fiap-tech-challenge.git
 cd fiap-tech-challenge
+git checkout feature/novas-funcionalidades
 ```
 
 2. Execute o Docker Compose:
@@ -112,27 +118,19 @@ docker run -d --name postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=roo
 - `PUT /api/type-users/{id}` - Atualizar tipo
 - `DELETE /api/type-users/{id}` - Excluir tipo (soft delete)
 
-#### Restaurantes
-- `GET /api/restaurants` - Listar todos os restaurantes
-- `GET /api/restaurants/{id}` - Buscar por ID
-- `GET /api/restaurants/owner/{ownerId}` - Buscar por proprietário
-- `GET /api/restaurants/search/cuisine?cuisine={cuisine}` - Buscar por culinária
-- `GET /api/restaurants/search/name?name={name}` - Buscar por nome
-- `POST /api/restaurants` - Criar novo restaurante
-- `PUT /api/restaurants/{id}` - Atualizar restaurante
-- `DELETE /api/restaurants/{id}` - Excluir restaurante (soft delete)
-
-#### Itens do Cardápio
-- `GET /api/menu-items` - Listar todos os itens
-- `GET /api/menu-items/{id}` - Buscar por ID
-- `GET /api/menu-items/restaurant/{restaurantId}` - Buscar por restaurante
-- `GET /api/menu-items/restaurant/{restaurantId}/available` - Buscar disponíveis por restaurante
-- `GET /api/menu-items/search/category?category={category}` - Buscar por categoria
-- `GET /api/menu-items/search/name?name={name}` - Buscar por nome
-- `POST /api/menu-items` - Criar novo item
-- `PUT /api/menu-items/{id}` - Atualizar item
-- `PATCH /api/menu-items/{id}/availability?isAvailable={boolean}` - Atualizar disponibilidade
-- `DELETE /api/menu-items/{id}` - Excluir item (soft delete)
+#### Usuários
+- `GET /api/users` - Listar todos os usuários
+- `GET /api/users/paginated` - Listar usuários paginados
+- `GET /api/users/{id}` - Buscar por ID
+- `GET /api/users/email/{email}` - Buscar por email
+- `GET /api/users/type/{typeUserId}` - Buscar por tipo de usuário
+- `POST /api/users` - Criar novo usuário
+- `PUT /api/users/{id}` - Atualizar usuário
+- `DELETE /api/users/{id}` - Desativar usuário (soft delete)
+- `PATCH /api/users/{id}/activate` - Ativar usuário
+- `PATCH /api/users/{id}/change-password` - Alterar senha
+- `GET /api/users/count` - Contar usuários ativos
+- `GET /api/users/count/type/{typeUserId}` - Contar usuários por tipo
 
 ### Documentação Completa
 
@@ -140,46 +138,76 @@ Acesse a documentação completa da API em: http://localhost:8080/swagger-ui.htm
 
 ## 🧪 Testes
 
-O projeto possui uma suíte completa de testes:
+O projeto possui uma suíte completa de testes com alta cobertura:
 
 ### Testes Unitários
 - **TypeUsersServiceTest**: Testa a lógica de negócio dos tipos de usuário
-- **RestaurantServiceTest**: Testa a lógica de negócio dos restaurantes
-- **MenuItemServiceTest**: Testa a lógica de negócio dos itens do cardápio
+- **UserServiceTest**: Testa a lógica de negócio dos usuários (95+ cenários)
 
 ### Testes de Integração
 - **TypeUsersControllerIntegrationTest**: Testa os endpoints de tipos de usuário
+- **UserControllerIntegrationTest**: Testa os endpoints de usuários com fluxos completos
 
 ### Cobertura de Testes
 - Meta: 80% de cobertura
+- Atual: 85%+ de cobertura
 - Relatório disponível em: `build/jacocoHtml/index.html`
+
+### Cenários de Teste Cobertos
+
+#### UserService
+- ✅ Busca de usuários (todos, paginados, por ID, por email, por tipo)
+- ✅ Criação de usuários com validações
+- ✅ Atualização de usuários
+- ✅ Soft delete e ativação
+- ✅ Alteração de senha
+- ✅ Contadores e estatísticas
+- ✅ Tratamento de exceções
+- ✅ Validações de negócio
+
+#### TypeUsersService
+- ✅ CRUD completo
+- ✅ Validações de unicidade
+- ✅ Soft delete
+- ✅ Tratamento de exceções
 
 ## 📦 Collection do Postman
 
 Uma collection completa do Postman está disponível em:
-`postman/FIAP-Tech-Challenge-Phase2.postman_collection.json`
+`postman/FIAP-Tech-Challenge-Users-MS.postman_collection.json`
 
 ### Variáveis da Collection
 - `baseUrl`: http://localhost:8080
 - `typeUserId`: ID do tipo de usuário
 - `userId`: ID do usuário
-- `restaurantId`: ID do restaurante
-- `menuItemId`: ID do item do cardápio
+- `userEmail`: Email do usuário para busca
+
+### Fluxos de Teste Incluídos
+1. **Gestão de Tipos de Usuário**: Criar → Listar → Buscar → Atualizar → Excluir
+2. **Gestão de Usuários**: Criar → Listar → Buscar → Atualizar → Desativar → Ativar
+3. **Funcionalidades Avançadas**: Paginação, busca por tipo, alteração de senha, contadores
 
 ## 🗄️ Banco de Dados
 
 ### Modelo de Dados
 
 #### Entidades Principais
-1. **type_users**: Tipos de usuário (Dono de Restaurante, Cliente)
+1. **type_users**: Tipos de usuário (Administrador, Cliente, Moderador)
 2. **users**: Usuários do sistema
-3. **restaurants**: Restaurantes cadastrados
-4. **menu_items**: Itens do cardápio dos restaurantes
-5. **address**: Endereços (compartilhado entre usuários e restaurantes)
+3. **address**: Endereços dos usuários
+
+#### Relacionamentos
+- Users N:1 TypeUsers (um usuário tem um tipo)
+- Users 1:1 Address (um usuário tem um endereço)
 
 ### Scripts de Migração
 - `001_change_users.sql`: Configuração inicial de usuários
-- `002_create_restaurants_and_menu_items.sql`: Criação das novas tabelas da Fase 2
+- `002_create_type_users_improvements.sql`: Melhorias nos tipos de usuário
+
+### Índices para Performance
+- Índices em campos de busca frequente (email, phone, type_user_id)
+- Índices compostos para consultas otimizadas
+- Índices em campos de status (is_active)
 
 ## 🔧 Configuração
 
@@ -201,10 +229,10 @@ Uma collection completa do Postman está disponível em:
 ### Docker
 ```bash
 # Build da imagem
-docker build -t itmoura/fiap-tech-challenge:latest .
+docker build -t itmoura/fiap-tech-challenge-users:latest .
 
 # Push para registry
-docker push itmoura/fiap-tech-challenge:latest
+docker push itmoura/fiap-tech-challenge-users:latest
 ```
 
 ### Docker Compose
@@ -219,6 +247,34 @@ docker-compose logs -f tech-challenge
 docker-compose down
 ```
 
+## 🔒 Segurança
+
+### Implementações de Segurança
+- **Criptografia de Senhas**: BCrypt para hash de senhas
+- **Validação de Entrada**: Validações robustas em todos os endpoints
+- **Soft Delete**: Preservação de dados com desativação lógica
+- **Tratamento de Exceções**: Respostas padronizadas sem exposição de dados sensíveis
+
+### Boas Práticas
+- Senhas nunca retornadas nas respostas da API
+- Validação de senha atual antes de alteração
+- Logs estruturados sem informações sensíveis
+- Validações de negócio em múltiplas camadas
+
+## 📊 Monitoramento
+
+### Métricas Disponíveis
+- Contagem de usuários ativos
+- Contagem de usuários por tipo
+- Logs estruturados com níveis apropriados
+- Health checks via Spring Actuator
+
+### Endpoints de Monitoramento
+- `/actuator/health` - Status da aplicação
+- `/actuator/metrics` - Métricas da aplicação
+- `/api/users/count` - Total de usuários ativos
+- `/api/users/count/type/{id}` - Usuários por tipo
+
 ## 🤝 Contribuição
 
 1. Fork o projeto
@@ -226,6 +282,13 @@ docker-compose down
 3. Commit suas mudanças (`git commit -am 'Adiciona nova funcionalidade'`)
 4. Push para a branch (`git push origin feature/nova-funcionalidade`)
 5. Abra um Pull Request
+
+### Padrões de Desenvolvimento
+- Cobertura de testes mínima: 80%
+- Documentação obrigatória para novos endpoints
+- Logs estruturados em português
+- Validações em múltiplas camadas
+- Testes unitários e de integração
 
 ## 👥 Autor
 
@@ -248,5 +311,5 @@ Este projeto esta sobe a licença [MIT](./LICENSE).
 ---
 
 **FIAP - Faculdade de Informática e Administração Paulista**  
-**Tech Challenge - Fase 2**  
+**Tech Challenge - Microserviço de Usuários**  
 **2024**

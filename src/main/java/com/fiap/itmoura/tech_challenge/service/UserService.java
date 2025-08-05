@@ -1,108 +1,166 @@
 package com.fiap.itmoura.tech_challenge.service;
 
-import com.fiap.itmoura.tech_challenge.exception.BadRequestException;
-import com.fiap.itmoura.tech_challenge.exception.ConflictRequestException;
-import com.fiap.itmoura.tech_challenge.model.dto.UserDTO;
-import com.fiap.itmoura.tech_challenge.model.entity.Users;
-import com.fiap.itmoura.tech_challenge.repository.UserRepository;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.security.core.context.SecurityContextHolder;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import com.fiap.itmoura.tech_challenge.exception.BadRequestException;
+import com.fiap.itmoura.tech_challenge.exception.ConflictRequestException;
+import com.fiap.itmoura.tech_challenge.model.dto.UserDTO;
+import com.fiap.itmoura.tech_challenge.model.entity.TypeUsers;
+import com.fiap.itmoura.tech_challenge.model.entity.Users;
+import com.fiap.itmoura.tech_challenge.repository.TypeUsersRepository;
+import com.fiap.itmoura.tech_challenge.repository.UserRepository;
 
-@Log4j2
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserService {
-    private final UserRepository userRepository;
 
-    private final PasswordEncoder encoder;
+    @Autowired
+    private UserRepository userRepository;
 
-    @Transactional
-    public UUID createUser(UserDTO userDTO) {
-        log.info("Creating user: {}", userDTO);
+    @Autowired
+    private TypeUsersRepository typeUsersRepository;
 
-        validateUser(userDTO);
+    @Autowired
+    private PasswordEncoder encoder;
 
-        var user = userDTO.toEntity();
-        user.setPassword(encoder.encode(userDTO.password()));
-        user.setIsActive(true);
-
-        log.info("User created successfully: {}", userDTO.email());
-
-        return userRepository.save(user).getId();
+    public List<UserDTO> findAll() {
+        log.info("Buscando todos os usuários ativos");
+        return userRepository.findAll()
+                .stream()
+                .filter(user -> user.getIsActive())
+                .map(UserDTO::fromEntity)
+                .toList();
     }
 
-    public List<UserDTO> getAllUsers() {
-        log.info("Retrieving all users");
+    public Page<UserDTO> findAllPaginated(Pageable pageable) {
+        log.info("Buscando usuários paginados - página: {}, tamanho: {}", pageable.getPageNumber(), pageable.getPageSize());
+        return userRepository.findByIsActiveTrue(pageable)
+                .map(UserDTO::fromEntity);
+    }
 
-        var users = userRepository.findAll();
-        if (users.isEmpty()) {
-            log.warn("No users found");
-            return List.of();
+    public UserDTO findById(UUID id) {
+        log.info("Buscando usuário por ID: {}", id);
+        Users user = userRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Usuário não encontrado"));
+        
+        if (!user.getIsActive()) {
+            throw new BadRequestException("Usuário não está ativo");
         }
-
-        log.info("Found {} users", users.size());
-        return users.stream().map(UserDTO::fromEntity).toList();
-    }
-
-    public UserDTO getUserById(UUID userId) {
-        log.info("Retrieving user by ID: {}", userId);
-
-        var user = userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException("User not found with ID: " + userId));
-
-        log.info("User found: {}", user.getEmail());
+        
         return UserDTO.fromEntity(user);
     }
 
-    private Boolean validateUser(UserDTO userDTO) {
+    public UserDTO findByEmail(String email) {
+        log.info("Buscando usuário por email: {}", email);
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException("Usuário não encontrado"));
+        
+        if (!user.getIsActive()) {
+            throw new BadRequestException("Usuário não está ativo");
+        }
+        
+        return UserDTO.fromEntity(user);
+    }
+
+    public List<UserDTO> findByTypeUserId(UUID typeUserId) {
+        log.info("Buscando usuários por tipo de usuário: {}", typeUserId);
+        return userRepository.findByTypeUserIdAndIsActiveTrue(typeUserId)
+                .stream()
+                .map(UserDTO::fromEntity)
+                .toList();
+    }
+
+    public UserDTO create(UserDTO userDTO) {
+        log.info("Criando novo usuário com email: {}", userDTO.email());
+        
+        // Validações
         if (userRepository.existsByEmail(userDTO.email())) {
-            log.error("User with email already exists: {}", userDTO.email());
-            throw new ConflictRequestException("User with email already exists: " + userDTO.email());
+            throw new ConflictRequestException("Já existe um usuário com este email");
         }
 
         if (userRepository.existsByPhone(userDTO.phone())) {
-            log.error("User with phone already exists: {}", userDTO.phone());
-            throw new ConflictRequestException("User with phone already exists: " + userDTO.phone());
+            throw new ConflictRequestException("Já existe um usuário com este telefone");
         }
 
-        return true;
+        // Busca o tipo de usuário se fornecido
+        TypeUsers typeUser = null;
+        if (userDTO.typeUserId() != null) {
+            typeUser = typeUsersRepository.findById(userDTO.typeUserId())
+                    .orElseThrow(() -> new BadRequestException("Tipo de usuário não encontrado"));
+            
+            if (!typeUser.getIsActive()) {
+                throw new BadRequestException("Tipo de usuário não está ativo");
+            }
+        }
+
+        Users user = Users.builder()
+                .name(userDTO.name())
+                .email(userDTO.email())
+                .password(encoder.encode(userDTO.password()))
+                .phone(userDTO.phone())
+                .birthDate(userDTO.birthDate())
+                .typeUser(typeUser)
+                .address(userDTO.address() != null ? userDTO.address().toEntity() : null)
+                .isActive(true)
+                .build();
+
+        Users savedUser = userRepository.save(user);
+        log.info("Usuário criado com sucesso: {}", savedUser.getEmail());
+        return UserDTO.fromEntity(savedUser);
     }
 
-    public UserDTO updateUser(UserDTO userDTO) {
-        var user = getUserLogged();
+    public UserDTO update(UUID id, UserDTO userDTO) {
+        log.info("Atualizando usuário com ID: {}", id);
+        Users user = userRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Usuário não encontrado"));
 
-        checkWhatUserChanging(user, userDTO);
+        if (!user.getIsActive()) {
+            throw new BadRequestException("Não é possível atualizar um usuário inativo");
+        }
 
-        log.info("User updated successfully: {}", user.getEmail());
+        // Validações de unicidade
+        if (!user.getEmail().equals(userDTO.email()) && userRepository.existsByEmail(userDTO.email())) {
+            throw new ConflictRequestException("Já existe um usuário com este email");
+        }
 
-        return UserDTO.fromEntity(userRepository.save(user));
-    }
+        if (!user.getPhone().equals(userDTO.phone()) && userRepository.existsByPhone(userDTO.phone())) {
+            throw new ConflictRequestException("Já existe um usuário com este telefone");
+        }
 
-    private void checkWhatUserChanging(Users user, UserDTO userDTO) {
-        log.info("Checking what user is changing: {}", user.getEmail());
-
+        // Atualiza campos
         if (Objects.nonNull(userDTO.name()) && !userDTO.name().equals(user.getName())) {
             user.setName(userDTO.name());
         }
 
         if (Objects.nonNull(userDTO.email()) && !userDTO.email().equals(user.getEmail())) {
-            if (userRepository.existsByEmail(userDTO.email())) {
-                log.error("User with email already exists: {}", userDTO.email());
-                throw new ConflictRequestException("User with email already exists: " + userDTO.email());
-            }
             user.setEmail(userDTO.email());
         }
 
         if (Objects.nonNull(userDTO.password())) {
             user.setPassword(encoder.encode(userDTO.password()));
+        }
+
+        if (Objects.nonNull(userDTO.typeUserId())) {
+            TypeUsers typeUser = typeUsersRepository.findById(userDTO.typeUserId())
+                    .orElseThrow(() -> new BadRequestException("Tipo de usuário não encontrado"));
+            
+            if (!typeUser.getIsActive()) {
+                throw new BadRequestException("Tipo de usuário não está ativo");
+            }
+            
+            user.setTypeUser(typeUser);
         }
 
         if (Objects.nonNull(userDTO.address())) {
@@ -114,49 +172,60 @@ public class UserService {
         }
 
         if (Objects.nonNull(userDTO.phone()) && !userDTO.phone().equals(user.getPhone())) {
-            if (userRepository.existsByPhone(userDTO.phone())) {
-                log.error("User with phone already exists: {}", userDTO.phone());
-                throw new ConflictRequestException("User with phone already exists: " + userDTO.phone());
-            }
             user.setPhone(userDTO.phone());
         }
 
-        user.setLastUpdatedAt(java.time.LocalDateTime.now());
+        Users updatedUser = userRepository.save(user);
+        log.info("Usuário atualizado com sucesso: {}", updatedUser.getEmail());
+        return UserDTO.fromEntity(updatedUser);
     }
 
-    private Users getUserLogged() {
-        var email = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
-        var user = userRepository.findByEmail(email);
-        if (user.isEmpty()) {
-            log.error("User not logged in");
-            throw new BadRequestException("User not logged in");
-        }
-
-        return user.get();
-    }
-
-    public void deleteLogicUser(UUID userId) {
-        log.info("Deleting user with ID: {}", userId);
-
-        var user = userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException("User not found with ID: " + userId));
-
-        if (!user.getIsActive()) {
-            log.error("User already deleted: {}", user.getEmail());
-            throw new ConflictRequestException("User already deleted: " + user.getEmail());
-        }
+    public void delete(UUID id) {
+        log.info("Desativando usuário com ID: {}", id);
+        Users user = userRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Usuário não encontrado"));
 
         user.setIsActive(false);
         userRepository.save(user);
-
-        log.info("User deleted successfully: {}", user.getEmail());
+        log.info("Usuário desativado com sucesso: {}", user.getEmail());
     }
 
-    public void deletePhysicalUser(UUID userId) {
-        log.info("Physically deleting user with ID: {}", userId);
-        var user = userRepository.findById(userId)
-                .orElseThrow(() -> new BadRequestException("User not found with ID: " + userId));
+    public void activate(UUID id) {
+        log.info("Ativando usuário com ID: {}", id);
+        Users user = userRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Usuário não encontrado"));
 
-        userRepository.delete(user);
+        user.setIsActive(true);
+        userRepository.save(user);
+        log.info("Usuário ativado com sucesso: {}", user.getEmail());
+    }
+
+    public UserDTO changePassword(UUID id, String currentPassword, String newPassword) {
+        log.info("Alterando senha do usuário com ID: {}", id);
+        Users user = userRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Usuário não encontrado"));
+
+        if (!user.getIsActive()) {
+            throw new BadRequestException("Usuário não está ativo");
+        }
+
+        if (!encoder.matches(currentPassword, user.getPassword())) {
+            throw new BadRequestException("Senha atual incorreta");
+        }
+
+        user.setPassword(encoder.encode(newPassword));
+        Users updatedUser = userRepository.save(user);
+        log.info("Senha alterada com sucesso para usuário: {}", user.getEmail());
+        return UserDTO.fromEntity(updatedUser);
+    }
+
+    public long countActiveUsers() {
+        log.info("Contando usuários ativos");
+        return userRepository.countByIsActiveTrue();
+    }
+
+    public long countUsersByType(UUID typeUserId) {
+        log.info("Contando usuários por tipo: {}", typeUserId);
+        return userRepository.countByTypeUserIdAndIsActiveTrue(typeUserId);
     }
 }
