@@ -15,9 +15,7 @@ CREATE TABLE IF NOT EXISTS address (
     city VARCHAR(100),
     state VARCHAR(2),
     zip_code VARCHAR(10) NOT NULL,
-    country VARCHAR(50) DEFAULT 'Brasil',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    country VARCHAR(50) DEFAULT 'Brasil'
 );
 
 -- Comentários na tabela e colunas
@@ -31,16 +29,8 @@ COMMENT ON COLUMN address.city IS 'Cidade';
 COMMENT ON COLUMN address.state IS 'Estado (sigla com 2 caracteres)';
 COMMENT ON COLUMN address.zip_code IS 'Código postal (CEP)';
 COMMENT ON COLUMN address.country IS 'País (padrão: Brasil)';
-COMMENT ON COLUMN address.created_at IS 'Data e hora de criação do registro';
-COMMENT ON COLUMN address.updated_at IS 'Data e hora da última atualização';
 
 -- Índices para otimização de performance
 CREATE INDEX IF NOT EXISTS idx_address_zip_code ON address(zip_code);
 CREATE INDEX IF NOT EXISTS idx_address_city ON address(city);
 CREATE INDEX IF NOT EXISTS idx_address_state ON address(state);
-
--- Trigger para atualizar automaticamente o campo updated_at
-CREATE TRIGGER update_address_updated_at 
-    BEFORE UPDATE ON address 
-    FOR EACH ROW 
-    EXECUTE FUNCTION update_updated_at_column();
