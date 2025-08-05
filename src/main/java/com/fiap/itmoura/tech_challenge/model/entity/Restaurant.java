@@ -1,7 +1,8 @@
 package com.fiap.itmoura.tech_challenge.model.entity;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
@@ -12,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import lombok.AllArgsConstructor;
@@ -19,12 +21,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "users")
-@Builder
+@Entity(name = "restaurants")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Users {
+public class Restaurant {
+
     @Id
     @GeneratedValue
     @Column(nullable = false)
@@ -33,30 +36,43 @@ public class Users {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
-    private String email;
+    @Column(nullable = false)
+    private String description;
 
     @Column(nullable = false)
-    private String password;
+    private String cuisine;
 
     @Column(nullable = false, unique = true)
+    private String cnpj;
+
+    @Column(nullable = false)
     private String phone;
 
-    @Column
-    private LocalDate birthDate;
+    @Column(nullable = false)
+    private String email;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "type_user_id")
-    private TypeUsers typeUser;
+    @Column
+    private LocalTime openingTime;
+
+    @Column
+    private LocalTime closingTime;
 
     @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id")
     private Address address;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private Users owner;
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<MenuItem> menuItems;
 
     @Column
     private LocalDateTime createdAt;
 
     @Column
-    private LocalDateTime lastUpdatedAt;
+    private LocalDateTime updatedAt;
 
     @Column
     @Builder.Default
@@ -65,11 +81,11 @@ public class Users {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-        lastUpdatedAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        lastUpdatedAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 }

@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.5'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'jacoco'
 }
 
 group = 'com.fiap.itmoura'
@@ -42,10 +43,12 @@ dependencies {
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+	
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.12.2'
 	testImplementation 'io.cucumber:cucumber-junit:7.22.1'
+	testImplementation 'com.h2database:h2'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -57,4 +60,28 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.required = false
+		csv.required = false
+		html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+	}
+}
+
+jacoco {
+	toolVersion = "0.8.8"
+}
+
+jacocoTestCoverageVerification {
+	violationRules {
+		rule {
+			limit {
+				minimum = 0.80
+			}
+		}
+	}
 }

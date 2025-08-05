@@ -55,6 +55,9 @@ public record UserDTO(
         @NotNull(message = "Phone number is required", groups = OnCreate.class)
         String phone,
 
+        @Schema(title = "typeUserId", description = "Type user ID", example = "123e4567-e89b-12d3-a456-426614174000")
+        UUID typeUserId,
+
         @Schema(title = "lastUpdate", description = "Last update timestamp", example = "2023-10-01T12:00:00Z")
         @LastModifiedDate
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -74,7 +77,6 @@ public record UserDTO(
                     .name(name)
                     .email(email)
                     .password(password)
-                    .roles(roles)
                     .address(address != null ? address.toEntity() : null)
                     .birthDate(birthDate)
                     .phone(phone)
@@ -89,10 +91,11 @@ public record UserDTO(
                     users.getName(),
                     users.getEmail(),
                     users.getPassword(),
-                    users.getRoles(),
+                    null, // roles removido temporariamente
                     users.getAddress() != null ? AddressDTO.fromEntity(users.getAddress()) : null,
                     users.getBirthDate(),
                     users.getPhone(),
+                    users.getTypeUser() != null ? users.getTypeUser().getId() : null,
                     users.getLastUpdatedAt(),
                     users.getCreatedAt()
             );
