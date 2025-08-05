@@ -44,7 +44,12 @@ public class JWTConfig {
                     .anyRequest().authenticated()
             )
             .addFilterBefore(jwtValidFilter, UsernamePasswordAuthenticationFilter.class)
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Unauthorized");
+            }));
 
         return http.build();
     }

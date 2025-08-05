@@ -2,12 +2,44 @@
 	"info": {
 		"_postman_id": "12345678-1234-1234-1234-123456789012",
 		"name": "FIAP Tech Challenge - Users Microservice",
-		"description": "Collection para testar os endpoints do microserviço de usuários",
+		"description": "Collection completa para testar todos os endpoints do microserviço de usuários",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Type Users",
+			"name": "🔐 Autenticação",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "Endpoint para autenticação de usuários. Retorna um token JWT válido."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📋 Type Users",
 			"item": [
 				{
 					"name": "Create Type User",
@@ -32,14 +64,22 @@
 								"api",
 								"type-users"
 							]
-						}
-					}
+						},
+						"description": "Cria um novo tipo de usuário no sistema."
+					},
+					"response": []
 				},
 				{
 					"name": "Get All Type Users",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/type-users",
 							"host": [
@@ -49,14 +89,22 @@
 								"api",
 								"type-users"
 							]
-						}
-					}
+						},
+						"description": "Retorna todos os tipos de usuário ativos."
+					},
+					"response": []
 				},
 				{
 					"name": "Get Type User by ID",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/type-users/{{typeUserId}}",
 							"host": [
@@ -67,8 +115,10 @@
 								"type-users",
 								"{{typeUserId}}"
 							]
-						}
-					}
+						},
+						"description": "Retorna um tipo de usuário específico pelo ID."
+					},
+					"response": []
 				},
 				{
 					"name": "Update Type User",
@@ -78,11 +128,16 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"id\": \"{{typeUserId}}\",\n  \"name\": \"Administrador Atualizado\",\n  \"description\": \"Descrição atualizada do administrador\"\n}"
+							"raw": "{\n  \"name\": \"Administrador Atualizado\",\n  \"description\": \"Descrição atualizada do administrador\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/type-users/{{typeUserId}}",
@@ -94,14 +149,22 @@
 								"type-users",
 								"{{typeUserId}}"
 							]
-						}
-					}
+						},
+						"description": "Atualiza um tipo de usuário existente."
+					},
+					"response": []
 				},
 				{
 					"name": "Delete Type User",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/type-users/{{typeUserId}}",
 							"host": [
@@ -112,13 +175,15 @@
 								"type-users",
 								"{{typeUserId}}"
 							]
-						}
-					}
+						},
+						"description": "Remove um tipo de usuário (soft delete)."
+					},
+					"response": []
 				}
 			]
 		},
 		{
-			"name": "Users",
+			"name": "👥 Users",
 			"item": [
 				{
 					"name": "Create User",
@@ -143,14 +208,22 @@
 								"api",
 								"users"
 							]
-						}
-					}
+						},
+						"description": "Cria um novo usuário no sistema."
+					},
+					"response": []
 				},
 				{
 					"name": "Get All Users",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/users",
 							"host": [
@@ -160,16 +233,24 @@
 								"api",
 								"users"
 							]
-						}
-					}
+						},
+						"description": "Retorna todos os usuários ativos."
+					},
+					"response": []
 				},
 				{
 					"name": "Get Users Paginated",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{baseUrl}}/api/users/paginated?page=0&size=10",
+							"raw": "{{baseUrl}}/api/users/paginated?page=0&size=10&sort=name,asc",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -181,21 +262,36 @@
 							"query": [
 								{
 									"key": "page",
-									"value": "0"
+									"value": "0",
+									"description": "Número da página (baseado em 0)"
 								},
 								{
 									"key": "size",
-									"value": "10"
+									"value": "10",
+									"description": "Tamanho da página"
+								},
+								{
+									"key": "sort",
+									"value": "name,asc",
+									"description": "Ordenação (campo,direção)"
 								}
 							]
-						}
-					}
+						},
+						"description": "Retorna usuários paginados com opções de ordenação."
+					},
+					"response": []
 				},
 				{
 					"name": "Get User by ID",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/users/{{userId}}",
 							"host": [
@@ -206,14 +302,22 @@
 								"users",
 								"{{userId}}"
 							]
-						}
-					}
+						},
+						"description": "Retorna um usuário específico pelo ID."
+					},
+					"response": []
 				},
 				{
 					"name": "Get User by Email",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/users/email/{{userEmail}}",
 							"host": [
@@ -225,14 +329,22 @@
 								"email",
 								"{{userEmail}}"
 							]
-						}
-					}
+						},
+						"description": "Retorna um usuário específico pelo email."
+					},
+					"response": []
 				},
 				{
 					"name": "Get Users by Type",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/users/type/{{typeUserId}}",
 							"host": [
@@ -244,8 +356,10 @@
 								"type",
 								"{{typeUserId}}"
 							]
-						}
-					}
+						},
+						"description": "Retorna todos os usuários de um tipo específico."
+					},
+					"response": []
 				},
 				{
 					"name": "Update User",
@@ -255,11 +369,16 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"id\": \"{{userId}}\",\n  \"name\": \"João Silva Atualizado\",\n  \"email\": \"joao.atualizado@email.com\",\n  \"phone\": \"(11) 88888-8888\",\n  \"birthDate\": \"1990-01-01\"\n}"
+							"raw": "{\n  \"name\": \"João Silva Atualizado\",\n  \"email\": \"joao.atualizado@email.com\",\n  \"phone\": \"(11) 88888-8888\",\n  \"birthDate\": \"1990-01-01\",\n  \"typeUserId\": \"{{typeUserId}}\",\n  \"address\": {\n    \"street\": \"Rua das Flores Atualizada\",\n    \"number\": 456,\n    \"complement\": \"Apt 202\",\n    \"neighborhood\": \"Vila Nova\",\n    \"city\": \"São Paulo\",\n    \"state\": \"SP\",\n    \"zipCode\": \"04567-890\"\n  }\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/users/{{userId}}",
@@ -271,14 +390,22 @@
 								"users",
 								"{{userId}}"
 							]
-						}
-					}
+						},
+						"description": "Atualiza um usuário existente."
+					},
+					"response": []
 				},
 				{
 					"name": "Delete User (Soft Delete)",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/users/{{userId}}",
 							"host": [
@@ -289,14 +416,22 @@
 								"users",
 								"{{userId}}"
 							]
-						}
-					}
+						},
+						"description": "Desativa um usuário (soft delete)."
+					},
+					"response": []
 				},
 				{
 					"name": "Activate User",
 					"request": {
 						"method": "PATCH",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/users/{{userId}}/activate",
 							"host": [
@@ -308,14 +443,22 @@
 								"{{userId}}",
 								"activate"
 							]
-						}
-					}
+						},
+						"description": "Reativa um usuário desativado."
+					},
+					"response": []
 				},
 				{
 					"name": "Change Password",
 					"request": {
 						"method": "PATCH",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/users/{{userId}}/change-password?currentPassword=password123&newPassword=newPassword456",
 							"host": [
@@ -330,21 +473,31 @@
 							"query": [
 								{
 									"key": "currentPassword",
-									"value": "password123"
+									"value": "password123",
+									"description": "Senha atual do usuário"
 								},
 								{
 									"key": "newPassword",
-									"value": "newPassword456"
+									"value": "newPassword456",
+									"description": "Nova senha do usuário"
 								}
 							]
-						}
-					}
+						},
+						"description": "Altera a senha de um usuário."
+					},
+					"response": []
 				},
 				{
 					"name": "Count Active Users",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/users/count",
 							"host": [
@@ -355,14 +508,22 @@
 								"users",
 								"count"
 							]
-						}
-					}
+						},
+						"description": "Retorna o número total de usuários ativos."
+					},
+					"response": []
 				},
 				{
 					"name": "Count Users by Type",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/api/users/count/type/{{typeUserId}}",
 							"host": [
@@ -375,8 +536,53 @@
 								"type",
 								"{{typeUserId}}"
 							]
-						}
-					}
+						},
+						"description": "Retorna o número de usuários de um tipo específico."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📚 Documentação",
+			"item": [
+				{
+					"name": "Swagger UI",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/swagger-ui/index.html",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"swagger-ui",
+								"index.html"
+							]
+						},
+						"description": "Interface do Swagger para documentação da API."
+					},
+					"response": []
+				},
+				{
+					"name": "OpenAPI JSON",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/v3/api-docs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"v3",
+								"api-docs"
+							]
+						},
+						"description": "Especificação OpenAPI em formato JSON."
+					},
+					"response": []
 				}
 			]
 		}
@@ -385,22 +591,32 @@
 		{
 			"key": "baseUrl",
 			"value": "http://localhost:8080",
-			"type": "string"
+			"type": "string",
+			"description": "URL base da API"
+		},
+		{
+			"key": "jwtToken",
+			"value": "",
+			"type": "string",
+			"description": "Token JWT obtido após login"
 		},
 		{
 			"key": "typeUserId",
 			"value": "",
-			"type": "string"
+			"type": "string",
+			"description": "ID do tipo de usuário para testes"
 		},
 		{
 			"key": "userId",
 			"value": "",
-			"type": "string"
+			"type": "string",
+			"description": "ID do usuário para testes"
 		},
 		{
 			"key": "userEmail",
 			"value": "joao@email.com",
-			"type": "string"
+			"type": "string",
+			"description": "Email do usuário para testes"
 		}
 	]
 }
