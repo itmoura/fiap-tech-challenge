@@ -1,27 +1,9 @@
 -- =====================================================
--- Migration V4: Dados iniciais e melhorias (CORRIGIDA)
+-- Migration V4: Dados iniciais e melhorias
 -- Descrição: Adiciona dados iniciais e melhorias no banco
 -- Autor: Sistema de Migração Automática
 -- Data: 2024-08-05
 -- =====================================================
-
--- Função para atualizar timestamp automaticamente
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.last_updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Função para atualizar timestamp em type_users
-CREATE OR REPLACE FUNCTION update_type_users_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
 
 -- Verificar se existem tipos de usuário, se não, inserir os padrão
 DO $$
@@ -145,7 +127,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Inserir usuário administrador padrão se não existir (CORRIGIDO)
+-- Inserir usuário administrador padrão se não existir
 DO $$
 DECLARE
     admin_type_id UUID;
@@ -153,11 +135,10 @@ BEGIN
     -- Buscar ID do tipo Administrador
     SELECT id INTO admin_type_id FROM type_users WHERE name = 'Administrador' LIMIT 1;
     
-    -- Verificar se encontrou o tipo e se o usuário não existe
-    IF admin_type_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@sistema.com') THEN
-        INSERT INTO users (id, name, email, password, phone, type_user_id, is_active) 
+    -- Inserir usuário admin se não existir
+    IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@sistema.com') THEN
+        INSERT INTO users (name, email, password, phone, type_user_id, is_active) 
         VALUES (
-            uuid_generate_v4(), -- Gerar UUID explicitamente
             'Administrador do Sistema', 
             'admin@sistema.com', 
             '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9tYrkkqbXyBXdO2', -- senha: admin123
