@@ -1,6 +1,9 @@
 package com.fiap.itmoura.tech_challenge.model.entity;
 
-import com.fiap.itmoura.tech_challenge.model.enums.UserRoleEnum;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,11 +16,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Set;
-import java.util.UUID;
 
 @Entity(name = "users")
 @Builder
@@ -47,7 +45,7 @@ public class Users {
 
     @Column
     @Enumerated(EnumType.STRING)
-    private Set<UserRoleEnum> roles;
+    private TypeUsers typeUser;
 
     @ManyToOne(cascade = CascadeType.ALL)
     private Address address;
