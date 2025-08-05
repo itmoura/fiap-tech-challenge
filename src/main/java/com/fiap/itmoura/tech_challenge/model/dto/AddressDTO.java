@@ -1,11 +1,16 @@
 package com.fiap.itmoura.tech_challenge.model.dto;
 
+import java.util.UUID;
+
 import com.fiap.itmoura.tech_challenge.model.entity.Address;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
 public record AddressDTO(
+
+        @Schema(title = "id", description = "Address ID", example = "123e4567-e89b-12d3-a456-426614174000")
+        UUID id,
 
         @Schema(title = "street", description = "Street name", example = "Rua das Flores")
         String street,
@@ -43,6 +48,7 @@ public record AddressDTO(
 
         public static AddressDTO fromEntity(Address address) {
                 return new AddressDTO(
+                        address.getId(),
                         address.getStreet(),
                         address.getNeighborhood(),
                         address.getComplement(),

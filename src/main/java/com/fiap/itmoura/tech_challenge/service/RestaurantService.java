@@ -77,7 +77,7 @@ public class RestaurantService {
         // Converte endereço
         Address address = null;
         if (restaurantDTO.getAddress() != null) {
-            address = convertToAddressEntity(restaurantDTO.getAddress());
+            address = restaurantDTO.getAddress().toEntity();
         }
 
         Restaurant restaurant = Restaurant.builder()
@@ -129,7 +129,7 @@ public class RestaurantService {
             if (existingRestaurant.getAddress() != null) {
                 updateAddress(existingRestaurant.getAddress(), restaurantDTO.getAddress());
             } else {
-                existingRestaurant.setAddress(convertToAddressEntity(restaurantDTO.getAddress()));
+                existingRestaurant.setAddress(restaurantDTO.getAddress().toEntity());
             }
         }
 
@@ -148,7 +148,7 @@ public class RestaurantService {
     private RestaurantDTO convertToDTO(Restaurant restaurant) {
         AddressDTO addressDTO = null;
         if (restaurant.getAddress() != null) {
-            addressDTO = convertToAddressDTO(restaurant.getAddress());
+            addressDTO = AddressDTO.fromEntity(restaurant.getAddress());
         }
 
         return RestaurantDTO.builder()
@@ -169,38 +169,13 @@ public class RestaurantService {
                 .build();
     }
 
-    private Address convertToAddressEntity(AddressDTO addressDTO) {
-        return Address.builder()
-                .street(addressDTO.getStreet())
-                .number(addressDTO.getNumber())
-                .complement(addressDTO.getComplement())
-                .neighborhood(addressDTO.getNeighborhood())
-                .city(addressDTO.getCity())
-                .state(addressDTO.getState())
-                .zipCode(addressDTO.getZipCode())
-                .build();
-    }
-
-    private AddressDTO convertToAddressDTO(Address address) {
-        return AddressDTO.builder()
-                .id(address.getId())
-                .street(address.getStreet())
-                .number(address.getNumber())
-                .complement(address.getComplement())
-                .neighborhood(address.getNeighborhood())
-                .city(address.getCity())
-                .state(address.getState())
-                .zipCode(address.getZipCode())
-                .build();
-    }
-
     private void updateAddress(Address existingAddress, AddressDTO addressDTO) {
-        existingAddress.setStreet(addressDTO.getStreet());
-        existingAddress.setNumber(addressDTO.getNumber());
-        existingAddress.setComplement(addressDTO.getComplement());
-        existingAddress.setNeighborhood(addressDTO.getNeighborhood());
-        existingAddress.setCity(addressDTO.getCity());
-        existingAddress.setState(addressDTO.getState());
-        existingAddress.setZipCode(addressDTO.getZipCode());
+        existingAddress.setStreet(addressDTO.street());
+        existingAddress.setNumber(addressDTO.number());
+        existingAddress.setComplement(addressDTO.complement());
+        existingAddress.setNeighborhood(addressDTO.neighborhood());
+        existingAddress.setCity(addressDTO.city());
+        existingAddress.setState(addressDTO.state());
+        existingAddress.setZipCode(addressDTO.zipCode());
     }
 }

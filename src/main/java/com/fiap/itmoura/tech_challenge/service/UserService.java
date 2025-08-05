@@ -105,10 +105,6 @@ public class UserService {
             user.setPassword(encoder.encode(userDTO.password()));
         }
 
-        if (Objects.nonNull(userDTO.roles())) {
-            user.setRoles(userDTO.roles());
-        }
-
         if (Objects.nonNull(userDTO.address())) {
             user.setAddress(userDTO.address().toEntity());
         }

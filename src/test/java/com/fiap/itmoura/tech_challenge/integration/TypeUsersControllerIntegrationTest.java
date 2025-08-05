@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -106,6 +106,6 @@ class TypeUsersControllerIntegrationTest {
 
         // Act & Assert
         mockMvc.perform(delete("/api/type-users/{id}", nonExistentId))
-                .andExpected(status().isBadRequest());
+                .andExpect(status().isBadRequest());
     }
 }
