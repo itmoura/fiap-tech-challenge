@@ -18,6 +18,7 @@ Este microserviço é parte de um sistema distribuído para gestão de restauran
 - ✅ **Busca Avançada**: Busca por email, tipo de usuário, etc.
 - ✅ **Alteração de Senha**: Funcionalidade segura para alteração de senhas
 - ✅ **Contadores**: Estatísticas de usuários ativos por tipo
+- ✅ **Migrações Automáticas**: Sistema Flyway para criação automática do banco
 - ✅ **Documentação da API**: Swagger/OpenAPI integrado
 - ✅ **Testes Automatizados**: Testes unitários e de integração com alta cobertura
 - ✅ **Docker Compose**: Configuração para execução com PostgreSQL
@@ -28,6 +29,7 @@ O projeto segue uma arquitetura em camadas com as seguintes tecnologias:
 
 - **Backend**: Spring Boot 3.4.5 com Java 21
 - **Banco de Dados**: PostgreSQL (produção) / H2 (testes)
+- **Migrações**: Flyway para versionamento automático do banco
 - **Segurança**: Spring Security com JWT
 - **Documentação**: Swagger/OpenAPI
 - **Testes**: JUnit 5, Mockito, Spring Boot Test
@@ -47,10 +49,10 @@ src/
 │   │   │   ├── entity/          # Entidades JPA
 │   │   │   ├── dto/             # DTOs
 │   │   │   └── enums/           # Enumerações
-│   │   ├── config/              # Configurações
+│   │   ├── config/              # Configurações (incluindo Flyway)
 │   │   └── exception/           # Exceções customizadas
 │   └── resources/
-│       ├── db/                  # Scripts de migração
+│       ├── db/migration/        # Scripts de migração Flyway
 │       └── application.yml      # Configurações
 └── test/                        # Testes unitários e integração
 ```
@@ -82,6 +84,8 @@ docker-compose up -d
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
 - **PostgreSQL**: localhost:5432
 
+**🎯 Migrações Automáticas**: O banco de dados será criado automaticamente na primeira execução!
+
 ### Executando Localmente
 
 1. Inicie o PostgreSQL:
@@ -94,6 +98,8 @@ docker run -d --name postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=roo
 ./gradlew bootRun
 ```
 
+**📝 Nota**: As migrações serão executadas automaticamente na inicialização!
+
 ### Executando os Testes
 
 ```bash
@@ -105,6 +111,101 @@ docker run -d --name postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=roo
 
 # Verificar cobertura mínima (80%)
 ./gradlew jacocoTestCoverageVerification
+```
+
+## 🗄️ Sistema de Migrações Automáticas
+
+### Como Funciona
+
+O projeto utiliza **Flyway** para gerenciar migrações automáticas do banco de dados:
+
+- ✅ **Execução Automática**: Migrações executam na inicialização da aplicação
+- ✅ **Versionamento**: Scripts numerados garantem ordem de execução
+- ✅ **Idempotência**: Migrações só executam se necessário
+- ✅ **Rollback Seguro**: Histórico completo de migrações aplicadas
+- ✅ **Validação**: Verificação de integridade dos scripts
+
+### Migrações Disponíveis
+
+| Versão | Arquivo | Descrição |
+|--------|---------|-----------|
+| V1 | `V1__Create_type_users_table.sql` | Cria tabela `type_users` com tipos padrão |
+| V2 | `V2__Create_address_table.sql` | Cria tabela `address` para endereços |
+| V3 | `V3__Create_users_table.sql` | Cria tabela `users` com relacionamentos |
+| V4 | `V4__Initial_data_and_improvements.sql` | Dados iniciais e melhorias |
+
+### Estrutura das Tabelas Criadas
+
+#### 1. **type_users**
+```sql
+- id (UUID, PK)
+- name (VARCHAR, UNIQUE) 
+- description (VARCHAR)
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+- is_active (BOOLEAN)
+```
+
+#### 2. **address**
+```sql
+- id (UUID, PK)
+- street, number, complement
+- neighborhood, city, state
+- zip_code (VARCHAR, NOT NULL)
+- country (VARCHAR, DEFAULT 'Brasil')
+- created_at, updated_at (TIMESTAMP)
+```
+
+#### 3. **users**
+```sql
+- id (UUID, PK)
+- name, email (UNIQUE), password
+- phone (UNIQUE), birth_date
+- type_user_id (FK → type_users)
+- address_id (FK → address)
+- created_at, last_updated_at
+- is_active (BOOLEAN)
+```
+
+### Dados Iniciais Criados
+
+#### Tipos de Usuário Padrão:
+- **Administrador**: Privilégios administrativos completos
+- **Cliente**: Usuário cliente padrão com acesso limitado  
+- **Moderador**: Privilégios de moderação e supervisão
+
+#### Usuário Administrador Padrão:
+- **Email**: admin@sistema.com
+- **Senha**: admin123
+- **Tipo**: Administrador
+
+### Funcionalidades Avançadas
+
+#### Views Criadas:
+- **user_statistics**: Estatísticas de usuários por tipo
+- **users_complete_info**: Informações completas dos usuários
+
+#### Funções Criadas:
+- **search_users()**: Busca full-text em usuários
+- **validate_email()**: Validação de formato de email
+- **validate_phone()**: Validação de telefone brasileiro
+- **validate_cep()**: Validação de CEP brasileiro
+
+#### Triggers:
+- **update_updated_at**: Atualização automática de timestamps
+
+### Logs de Migração
+
+Durante a inicialização, você verá logs como:
+```
+INFO  - Configurando Flyway para migrações automáticas do banco de dados
+INFO  - Iniciando migrações do banco de dados...
+INFO  - Migração aplicada: 1 - Create_type_users_table - Estado: SUCCESS
+INFO  - Migração aplicada: 2 - Create_address_table - Estado: SUCCESS
+INFO  - Migração aplicada: 3 - Create_users_table - Estado: SUCCESS
+INFO  - Migração aplicada: 4 - Initial_data_and_improvements - Estado: SUCCESS
+INFO  - Migrações do banco de dados concluídas com sucesso!
+INFO  - ✅ Todas as migrações foram aplicadas com sucesso!
 ```
 
 ## 📚 Documentação da API
@@ -187,28 +288,6 @@ Uma collection completa do Postman está disponível em:
 2. **Gestão de Usuários**: Criar → Listar → Buscar → Atualizar → Desativar → Ativar
 3. **Funcionalidades Avançadas**: Paginação, busca por tipo, alteração de senha, contadores
 
-## 🗄️ Banco de Dados
-
-### Modelo de Dados
-
-#### Entidades Principais
-1. **type_users**: Tipos de usuário (Administrador, Cliente, Moderador)
-2. **users**: Usuários do sistema
-3. **address**: Endereços dos usuários
-
-#### Relacionamentos
-- Users N:1 TypeUsers (um usuário tem um tipo)
-- Users 1:1 Address (um usuário tem um endereço)
-
-### Scripts de Migração
-- `001_change_users.sql`: Configuração inicial de usuários
-- `002_create_type_users_improvements.sql`: Melhorias nos tipos de usuário
-
-### Índices para Performance
-- Índices em campos de busca frequente (email, phone, type_user_id)
-- Índices compostos para consultas otimizadas
-- Índices em campos de status (is_active)
-
 ## 🔧 Configuração
 
 ### Variáveis de Ambiente
@@ -219,10 +298,22 @@ Uma collection completa do Postman está disponível em:
 - `BD_PASS=root`
 
 #### Desenvolvimento Local
-- `SPRING_PROFILES_ACTIVE=dev`
+- `SPRING_PROFILES_ACTIVE=develop`
 
 #### Testes
 - `SPRING_PROFILES_ACTIVE=test`
+
+### Configurações do Flyway
+
+```yaml
+spring:
+  flyway:
+    enabled: true                    # Habilita migrações automáticas
+    locations: classpath:db/migration # Local dos scripts
+    baseline-on-migrate: true        # Permite migração em BD existente
+    validate-on-migrate: true        # Valida scripts antes de executar
+    clean-disabled: true             # Desabilita limpeza (segurança)
+```
 
 ## 🚀 Deploy
 
@@ -240,7 +331,7 @@ docker push itmoura/fiap-tech-challenge-users:latest
 # Subir todos os serviços
 docker-compose up -d
 
-# Verificar logs
+# Verificar logs das migrações
 docker-compose logs -f tech-challenge
 
 # Parar serviços
@@ -254,12 +345,14 @@ docker-compose down
 - **Validação de Entrada**: Validações robustas em todos os endpoints
 - **Soft Delete**: Preservação de dados com desativação lógica
 - **Tratamento de Exceções**: Respostas padronizadas sem exposição de dados sensíveis
+- **Validações de Banco**: Constraints para email, telefone e CEP
 
 ### Boas Práticas
 - Senhas nunca retornadas nas respostas da API
 - Validação de senha atual antes de alteração
 - Logs estruturados sem informações sensíveis
 - Validações de negócio em múltiplas camadas
+- Usuário administrador padrão para configuração inicial
 
 ## 📊 Monitoramento
 
@@ -268,12 +361,17 @@ docker-compose down
 - Contagem de usuários por tipo
 - Logs estruturados com níveis apropriados
 - Health checks via Spring Actuator
+- Relatórios de migração na inicialização
 
 ### Endpoints de Monitoramento
 - `/actuator/health` - Status da aplicação
 - `/actuator/metrics` - Métricas da aplicação
 - `/api/users/count` - Total de usuários ativos
 - `/api/users/count/type/{id}` - Usuários por tipo
+
+### Views de Estatísticas
+- **user_statistics**: Estatísticas completas por tipo de usuário
+- **users_complete_info**: Informações completas dos usuários ativos
 
 ## 🤝 Contribuição
 
@@ -289,6 +387,16 @@ docker-compose down
 - Logs estruturados em português
 - Validações em múltiplas camadas
 - Testes unitários e de integração
+- Migrações versionadas para mudanças no banco
+
+### Criando Novas Migrações
+
+Para adicionar uma nova migração:
+
+1. Crie um arquivo em `src/main/resources/db/migration/`
+2. Use o padrão: `V{número}__{descrição}.sql`
+3. Exemplo: `V5__Add_user_preferences_table.sql`
+4. A migração será executada automaticamente na próxima inicialização
 
 ## 👥 Autor
 
